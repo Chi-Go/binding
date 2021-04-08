@@ -90,7 +90,7 @@ func Test_EnsureNotPointer(t *testing.T) {
 
 	shouldNotPanic := func() {
 		defer func() {
-			assert.NotNil(t, recover())
+			assert.Nil(t, recover())
 		}()
 		ensureNotPointer(Post{})
 	}

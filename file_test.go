@@ -113,7 +113,7 @@ func assertFileAsExpected(t *testing.T, testCase fileTestCase, actual *multipart
 		assert.NotNil(t, actual)
 		return
 	} else if expected == nil && actual != nil {
-		assert.NotNil(t, actual)
+		assert.Nil(t, actual)
 		return
 	}
 

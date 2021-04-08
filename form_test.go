@@ -177,9 +177,9 @@ func performFormTest(t *testing.T, binder handlerFunc, testCase formTestCase) {
 
 	formTestHandler := func(actual interface{}, errs Errors) {
 		if testCase.shouldSucceed && len(errs) > 0 {
-			assert.EqualValues(t, len(errs), 0)
+			assert.EqualValues(t, 0, len(errs))
 		} else if !testCase.shouldSucceed && len(errs) == 0 {
-			assert.EqualValues(t, len(errs), 0)
+			assert.NotEqual(t, 0, len(errs))
 		}
 		expString := fmt.Sprintf("%+v", testCase.expected)
 		actString := fmt.Sprintf("%+v", actual)
