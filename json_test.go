@@ -20,6 +20,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -78,7 +80,7 @@ var jsonTestCases = []jsonTestCase{
 		shouldSucceedOnJson: false,
 		payload:             `{"title":"foo"`,
 		contentType:         _JSON_CONTENT_TYPE,
-		expected:            Post{},
+		expected:            Post{Title: "foo"},
 	},
 	{
 		description:         "Deserialization with nested and embedded struct",
@@ -132,18 +134,28 @@ func Test_Json(t *testing.T) {
 }
 
 func performJsonTest(t *testing.T, binder handlerFunc, testCase jsonTestCase) {
+	fnName := runtime.FuncForPC(reflect.ValueOf(binder).Pointer()).Name()
 	t.Run(testCase.description, func(t *testing.T) {
 		var payload io.Reader
 		httpRecorder := httptest.NewRecorder()
 		m := chi.NewRouter()
 
 		jsonTestHandler := func(actual interface{}, errs Errors) {
-			if testCase.shouldSucceedOnJson && len(errs) > 0 {
-				assert.EqualValues(t, len(errs), 0)
-			} else if !testCase.shouldSucceedOnJson && len(errs) == 0 {
-				assert.NotEqual(t, len(errs), 0)
+			if fnName == "JSON" {
+				if testCase.shouldSucceedOnJson {
+					assert.EqualValues(t, 0, len(errs), errs)
+					assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expected), fmt.Sprintf("%+v", actual))
+				} else {
+					assert.NotEqual(t, 0, len(errs))
+				}
+			} else if fnName == "Bind" {
+				if !testCase.shouldFailOnBind {
+					assert.EqualValues(t, 0, len(errs), errs)
+				} else {
+					assert.NotEqual(t, 0, len(errs))
+					assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expected), fmt.Sprintf("%+v", actual))
+				}
 			}
-			assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expected), fmt.Sprintf("%+v", actual))
 		}
 
 		switch testCase.expected.(type) {

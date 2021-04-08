@@ -86,9 +86,9 @@ func performMultipartFormTest(t *testing.T, binder handlerFunc, testCase multipa
 		var actual BlogPost
 		errs := binder(req, &actual)
 		if testCase.shouldSucceed && len(errs) > 0 {
-			assert.EqualValues(t, len(errs), 0)
+			assert.EqualValues(t, 0, len(errs))
 		} else if !testCase.shouldSucceed && len(errs) == 0 {
-			assert.NotEqual(t, len(errs), 0)
+			assert.NotEqual(t, 0, len(errs))
 		}
 		assert.EqualValues(t, fmt.Sprintf("%+v", actual), fmt.Sprintf("%+v", testCase.inputAndExpected))
 	})
