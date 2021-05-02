@@ -353,7 +353,22 @@ func validateStruct(errors Errors, obj interface{}) Errors {
 			(field.Type.Kind() == reflect.Ptr && !reflect.DeepEqual(zero, fieldValue) &&
 				field.Type.Elem().Kind() == reflect.Struct) {
 			errors = validateStruct(errors, fieldValue)
+			continue
 		}
+
+		if fieldVal.Kind() == reflect.Ptr {
+			isZero := reflect.DeepEqual(zero, fieldValue)
+
+			zero = reflect.Zero(fieldVal.Type().Elem()).Interface()
+			fieldVal = fieldVal.Elem()
+
+			if isZero {
+				fieldValue = zero
+			} else {
+				fieldValue = fieldVal.Interface()
+			}
+		}
+
 		errors = validateField(errors, zero, field, fieldVal, fieldValue)
 	}
 	return errors
