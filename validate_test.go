@@ -25,6 +25,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var emptyStr = ""
+var urlStr = "http://example.com/"
+var alphaDashStr = "aB-12"
+
 var validationTestCases = []validationTestCase{
 	{
 		description: "No errors",
@@ -161,7 +165,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List Validation",
 		data: []BlogPost{
-			BlogPost{
+			{
 				Id: 1,
 				Post: Post{
 					Title:   "First Post",
@@ -171,7 +175,7 @@ var validationTestCases = []validationTestCase{
 					Name: "Leeor Aharon",
 				},
 			},
-			BlogPost{
+			{
 				Id: 2,
 				Post: Post{
 					Title:   "Second Post",
@@ -187,7 +191,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List Validation w/ Errors",
 		data: []BlogPost{
-			BlogPost{
+			{
 				Id: 1,
 				Post: Post{
 					Title:   "First Post",
@@ -197,7 +201,7 @@ var validationTestCases = []validationTestCase{
 					Name: "Leeor Aharon",
 				},
 			},
-			BlogPost{
+			{
 				Id: 2,
 				Post: Post{
 					Title:   "Too Short",
@@ -219,7 +223,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List of invalid custom validations",
 		data: []SadForm{
-			SadForm{
+			{
 				AlphaDash:    ",",
 				AlphaDashDot: ",",
 				Size:         "123",
@@ -324,7 +328,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List of valid custom validations",
 		data: []SadForm{
-			SadForm{
+			{
 				AlphaDash:    "123-456",
 				AlphaDashDot: "123.456",
 				Size:         "1",
@@ -347,8 +351,8 @@ var validationTestCases = []validationTestCase{
 		data: Group{
 			Name: "group1",
 			People: []Person{
-				Person{Name: "anthony"},
-				Person{Name: "awoods"},
+				{Name: "anthony"},
+				{Name: "awoods"},
 			},
 		},
 		expectedErrors: Errors{},
@@ -358,8 +362,8 @@ var validationTestCases = []validationTestCase{
 		data: Group{
 			Name: "group1",
 			People: []Person{
-				Person{Name: "anthony"},
-				Person{Name: ""},
+				{Name: "anthony"},
+				{Name: ""},
 			},
 		},
 		expectedErrors: Errors{
@@ -367,6 +371,62 @@ var validationTestCases = []validationTestCase{
 				FieldNames:     []string{"name"},
 				Classification: ERR_REQUIRED,
 				Message:        "Required",
+			},
+		},
+	},
+	{
+		description:    "pointer form empty and nil",
+		data:           PointerForm{},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form empty",
+		data: PointerForm{
+			Url:              "",
+			UrlPointer:       &emptyStr,
+			AlphaDash:        "",
+			AlphaDashPointer: &emptyStr,
+		},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form with valid data",
+		data: PointerForm{
+			Url:              urlStr,
+			UrlPointer:       &urlStr,
+			AlphaDash:        alphaDashStr,
+			AlphaDashPointer: &alphaDashStr,
+		},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form with invalid data",
+		data: PointerForm{
+			Url:              alphaDashStr,
+			UrlPointer:       &alphaDashStr,
+			AlphaDash:        urlStr,
+			AlphaDashPointer: &urlStr,
+		},
+		expectedErrors: Errors{
+			Error{
+				FieldNames:     []string{"Url", "UrlPointer"},
+				Classification: "Url",
+				Message:        "Url",
+			},
+			Error{
+				FieldNames:     []string{"UrlPointer"},
+				Classification: "Url",
+				Message:        "Url",
+			},
+			Error{
+				FieldNames:     []string{"AlphaDash"},
+				Classification: "AlphaDash",
+				Message:        "AlphaDash",
+			},
+			Error{
+				FieldNames:     []string{"AlphaDashPointer"},
+				Classification: "AlphaDash",
+				Message:        "AlphaDash",
 			},
 		},
 	},
@@ -384,7 +444,7 @@ func performValidationTest(t *testing.T, testCase validationTestCase) {
 
 	m.Post(testRoute, func(resp http.ResponseWriter, req *http.Request) {
 		actual := Validate(req, testCase.data)
-		assert.EqualValues(t, fmt.Sprintf("%+v", actual), fmt.Sprintf("%+v", testCase.expectedErrors))
+		assert.EqualValues(t, fmt.Sprintf("%+v", actual), fmt.Sprintf("%+v", testCase.expectedErrors), testCase.description)
 	})
 
 	req, err := http.NewRequest("POST", testRoute, nil)
