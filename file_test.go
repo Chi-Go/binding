@@ -117,8 +117,8 @@ func assertFileAsExpected(t *testing.T, testCase fileTestCase, actual *multipart
 		return
 	}
 
-	assert.EqualValues(t, actual.Filename, expected.fileName)
-	assert.EqualValues(t, unpackFileHeaderData(actual), expected.data)
+	assert.EqualValues(t, expected.fileName, actual.Filename)
+	assert.EqualValues(t, expected.data, unpackFileHeaderData(actual))
 }
 
 func buildRequestWithFile(testCase fileTestCase) *http.Request {

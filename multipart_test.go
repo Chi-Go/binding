@@ -90,7 +90,7 @@ func performMultipartFormTest(t *testing.T, binder handlerFunc, testCase multipa
 		} else if !testCase.shouldSucceed && len(errs) == 0 {
 			assert.NotEqual(t, 0, len(errs))
 		}
-		assert.EqualValues(t, fmt.Sprintf("%+v", actual), fmt.Sprintf("%+v", testCase.inputAndExpected))
+		assert.EqualValues(t, fmt.Sprintf("%+v", testCase.inputAndExpected), fmt.Sprintf("%+v", actual))
 	})
 
 	multipartPayload, mpWriter := makeMultipartPayload(testCase)
