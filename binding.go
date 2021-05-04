@@ -231,9 +231,7 @@ func Validate(req *http.Request, obj interface{}) Errors {
 }
 
 var (
-	AlphaDashPattern    = regexp.MustCompile("[^\\d\\w-_]")
-	AlphaDashDotPattern = regexp.MustCompile("[^\\d\\w-_\\.]")
-	EmailPattern        = regexp.MustCompile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[a-zA-Z0-9](?:[\\w-]*[\\w])?")
+	EmailPattern        = regexp.MustCompile(`\A[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[a-zA-Z0-9](?:[\w-]*[\w])?\z`)
 )
 
 // Copied from github.com/asaskevich/govalidator.
