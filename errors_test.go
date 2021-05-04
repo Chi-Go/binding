@@ -34,7 +34,7 @@ func Test_ErrorsAdd(t *testing.T) {
 
 	actual.Add(expected[0].FieldNames, expected[0].Classification, expected[0].Message)
 
-	assert.EqualValues(t, 1, len(actual))
+	assert.Len(t, actual, 1)
 	assert.EqualValues(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 }
 
@@ -57,7 +57,7 @@ func Test_ErrorGetters(t *testing.T) {
 
 	fieldsActual := err.Fields()
 
-	assert.EqualValues(t, 2, len(fieldsActual))
+	assert.Len(t, fieldsActual, 2)
 	assert.EqualValues(t, "field1", fieldsActual[0])
 	assert.EqualValues(t, "field2", fieldsActual[1])
 

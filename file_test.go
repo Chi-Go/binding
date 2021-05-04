@@ -78,7 +78,7 @@ func performFileTest(t *testing.T, binder handlerFunc, testCase fileTestCase) {
 
 	fileTestHandler := func(actual BlogPost, errs Errors) {
 		assertFileAsExpected(t, testCase, actual.HeaderImage, testCase.singleFile)
-		assert.EqualValues(t, len(testCase.multipleFiles), len(actual.Pictures))
+		assert.Len(t, actual.Pictures, len(testCase.multipleFiles))
 
 		for i, expectedFile := range testCase.multipleFiles {
 			if i >= len(actual.Pictures) {

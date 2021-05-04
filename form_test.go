@@ -176,10 +176,10 @@ func performFormTest(t *testing.T, binder handlerFunc, testCase formTestCase) {
 	m := chi.NewRouter()
 
 	formTestHandler := func(actual interface{}, errs Errors) {
-		if testCase.shouldSucceed && len(errs) > 0 {
-			assert.EqualValues(t, 0, len(errs))
-		} else if !testCase.shouldSucceed && len(errs) == 0 {
-			assert.NotEqual(t, 0, len(errs))
+		if testCase.shouldSucceed {
+			assert.Empty(t, errs)
+		} else if !testCase.shouldSucceed {
+			assert.NotEmpty(t, errs)
 		}
 		expString := fmt.Sprintf("%+v", testCase.expected)
 		actString := fmt.Sprintf("%+v", actual)

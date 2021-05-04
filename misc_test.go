@@ -64,9 +64,9 @@ func Test_SetWithProperType(t *testing.T) {
 			errs := Form(req, &actual)
 			assert.EqualValues(t, fmt.Sprintf("%+v", expectedOutputs[key]), fmt.Sprintf("%+v", actual))
 			if key == "errorful" {
-				assert.EqualValues(t, 10, len(errs))
+				assert.Len(t, errs, 10)
 			} else {
-				assert.EqualValues(t, 0, len(errs))
+				assert.Empty(t, errs)
 			}
 		})
 		req, err := http.NewRequest("POST", testRoute, strings.NewReader(testCase))

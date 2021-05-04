@@ -143,16 +143,16 @@ func performJsonTest(t *testing.T, binder handlerFunc, testCase jsonTestCase) {
 		jsonTestHandler := func(actual interface{}, errs Errors) {
 			if fnName == "JSON" {
 				if testCase.shouldSucceedOnJson {
-					assert.EqualValues(t, 0, len(errs), errs)
+					assert.Empty(t, errs, errs)
 					assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expected), fmt.Sprintf("%+v", actual))
 				} else {
-					assert.NotEqual(t, 0, len(errs))
+					assert.NotEmpty(t, errs)
 				}
 			} else if fnName == "Bind" {
 				if !testCase.shouldFailOnBind {
-					assert.EqualValues(t, 0, len(errs), errs)
+					assert.Empty(t, errs, errs)
 				} else {
-					assert.NotEqual(t, 0, len(errs))
+					assert.NotEmpty(t, errs)
 					assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expected), fmt.Sprintf("%+v", actual))
 				}
 			}
