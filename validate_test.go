@@ -444,7 +444,7 @@ func performValidationTest(t *testing.T, testCase validationTestCase) {
 
 	m.Post(testRoute, func(resp http.ResponseWriter, req *http.Request) {
 		actual := Validate(req, testCase.data)
-		assert.EqualValues(t, fmt.Sprintf("%+v", actual), fmt.Sprintf("%+v", testCase.expectedErrors), testCase.description)
+		assert.EqualValues(t, fmt.Sprintf("%+v", testCase.expectedErrors), fmt.Sprintf("%+v", actual), testCase.description)
 	})
 
 	req, err := http.NewRequest("POST", testRoute, nil)
