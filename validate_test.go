@@ -377,11 +377,21 @@ var validationTestCases = []validationTestCase{
 			EmailFail   string `binding:"Email"`
 			EmailFail2  string `binding:"Email"`
 			EmailFail3  string `binding:"Email"`
-		} {
-			EmailValid: "123@asd.com",
-			EmailFail:  "test 123@asd.com",
-			EmailFail2: "123@asd.com test",
-			EmailFail3: "test 123@asd.com test",
+			EmailValid2 string `binding:"Email"`
+			EmailValid3 string `binding:"Email"`
+			EmailValid4 string `binding:"Email"`
+			EmailValid5 string `binding:"Email"`
+			EmailValid6 string `binding:"Email"`
+		}{
+			EmailValid:  "123@asd.com",
+			EmailFail:   "test 123@asd.com",
+			EmailFail2:  "123@asd.com test",
+			EmailFail3:  "test 123@asd.com test",
+			EmailValid2: "user+mailbox@example.com",
+			EmailValid3: "customer/department=shipping@example.com",
+			EmailValid4: `$A12345@example.com`,
+			EmailValid5: `!def!xyz%abc@example.com`,
+			EmailValid6: `_somename@example.com`,
 		},
 		expectedErrors: Errors{
 			Error{

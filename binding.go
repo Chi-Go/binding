@@ -22,6 +22,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/mail"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -233,7 +234,6 @@ func Validate(req *http.Request, obj interface{}) Errors {
 var (
 	AlphaDashPattern    = regexp.MustCompile(`[^\d\w-_]`)
 	AlphaDashDotPattern = regexp.MustCompile(`[^\d\w-_\.]`)
-	EmailPattern        = regexp.MustCompile(`\A[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[a-zA-Z0-9](?:[\w-]*[\w])?\z`)
 )
 
 // Copied from github.com/asaskevich/govalidator.
@@ -474,7 +474,7 @@ VALIDATE_RULES:
 				break VALIDATE_RULES
 			}
 		case rule == "Email":
-			if !EmailPattern.MatchString(fmt.Sprintf("%v", fieldValue)) {
+			if _, err := mail.ParseAddress(fmt.Sprintf("%v", fieldValue)); err != nil {
 				errors.Add([]string{field.Name}, ERR_EMAIL, "Email")
 				break VALIDATE_RULES
 			}
