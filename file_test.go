@@ -22,8 +22,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi"
-	. "github.com/smartystreets/goconvey/convey"
+	chi "github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 var fileTestCases = []fileTestCase{
@@ -67,11 +67,9 @@ var fileTestCases = []fileTestCase{
 }
 
 func Test_FileUploads(t *testing.T) {
-	Convey("Test file upload", t, func() {
-		for _, testCase := range fileTestCases {
-			performFileTest(t, MultipartForm, testCase)
-		}
-	})
+	for _, testCase := range fileTestCases {
+		performFileTest(t, MultipartForm, testCase)
+	}
 }
 
 func performFileTest(t *testing.T, binder handlerFunc, testCase fileTestCase) {
@@ -80,7 +78,7 @@ func performFileTest(t *testing.T, binder handlerFunc, testCase fileTestCase) {
 
 	fileTestHandler := func(actual BlogPost, errs Errors) {
 		assertFileAsExpected(t, testCase, actual.HeaderImage, testCase.singleFile)
-		So(len(testCase.multipleFiles), ShouldEqual, len(actual.Pictures))
+		assert.Len(t, actual.Pictures, len(testCase.multipleFiles))
 
 		for i, expectedFile := range testCase.multipleFiles {
 			if i >= len(actual.Pictures) {
@@ -112,15 +110,15 @@ func assertFileAsExpected(t *testing.T, testCase fileTestCase, actual *multipart
 	}
 
 	if expected != nil && actual == nil {
-		So(actual, ShouldNotBeNil)
+		assert.NotNil(t, actual)
 		return
 	} else if expected == nil && actual != nil {
-		So(actual, ShouldBeNil)
+		assert.Nil(t, actual)
 		return
 	}
 
-	So(actual.Filename, ShouldEqual, expected.fileName)
-	So(unpackFileHeaderData(actual), ShouldEqual, expected.data)
+	assert.EqualValues(t, expected.fileName, actual.Filename)
+	assert.EqualValues(t, expected.data, unpackFileHeaderData(actual))
 }
 
 func buildRequestWithFile(testCase fileTestCase) *http.Request {
