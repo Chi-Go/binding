@@ -149,6 +149,9 @@ func MultipartForm(req *http.Request, formStruct interface{}) Errors {
 			if req.Form == nil {
 				req.ParseForm()
 			}
+			if form == nil {
+				return append(errors, Validate(req, formStruct)...)
+			}
 			for k, v := range form.Value {
 				req.Form[k] = append(req.Form[k], v...)
 			}
@@ -267,7 +270,6 @@ func isURL(str string) bool {
 		return false
 	}
 	return URLPattern.MatchString(str)
-
 }
 
 type (
@@ -293,8 +295,10 @@ type (
 	ParamRuleMapper []*ParamRule
 )
 
-var ruleMapper RuleMapper
-var paramRuleMapper ParamRuleMapper
+var (
+	ruleMapper      RuleMapper
+	paramRuleMapper ParamRuleMapper
+)
 
 // AddRule adds new validation rule.
 func AddRule(r *Rule) {
@@ -531,21 +535,19 @@ VALIDATE_RULES:
 // NameMapper represents a form tag name mapper.
 type NameMapper func(string) string
 
-var (
-	nameMapper = func(field string) string {
-		newstr := make([]rune, 0, len(field))
-		for i, chr := range field {
-			if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
-				if i > 0 {
-					newstr = append(newstr, '_')
-				}
-				chr -= ('A' - 'a')
+var nameMapper = func(field string) string {
+	newstr := make([]rune, 0, len(field))
+	for i, chr := range field {
+		if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
+			if i > 0 {
+				newstr = append(newstr, '_')
 			}
-			newstr = append(newstr, chr)
+			chr -= ('A' - 'a')
 		}
-		return string(newstr)
+		newstr = append(newstr, chr)
 	}
-)
+	return string(newstr)
+}
 
 // SetNameMapper sets name mapper.
 func SetNameMapper(nm NameMapper) {
@@ -554,8 +556,8 @@ func SetNameMapper(nm NameMapper) {
 
 // Takes values from the form data and puts them into a struct
 func mapForm(formStruct reflect.Value, form map[string][]string,
-	formfile map[string][]*multipart.FileHeader, errors Errors) Errors {
-
+	formfile map[string][]*multipart.FileHeader, errors Errors,
+) Errors {
 	if formStruct.Kind() == reflect.Ptr {
 		formStruct = formStruct.Elem()
 	}
