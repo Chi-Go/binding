@@ -149,6 +149,9 @@ func MultipartForm(req *http.Request, formStruct interface{}) Errors {
 			if req.Form == nil {
 				req.ParseForm()
 			}
+			if form == nil {
+				return append(errors, Validate(req, formStruct)...)
+			}
 			for k, v := range form.Value {
 				req.Form[k] = append(req.Form[k], v...)
 			}
@@ -267,7 +270,6 @@ func isURL(str string) bool {
 		return false
 	}
 	return URLPattern.MatchString(str)
-
 }
 
 type (
@@ -293,8 +295,10 @@ type (
 	ParamRuleMapper []*ParamRule
 )
 
-var ruleMapper RuleMapper
-var paramRuleMapper ParamRuleMapper
+var (
+	ruleMapper      RuleMapper
+	paramRuleMapper ParamRuleMapper
+)
 
 // AddRule adds new validation rule.
 func AddRule(r *Rule) {
@@ -403,32 +407,41 @@ func validateField(errors Errors, zero interface{}, field reflect.StructField, f
 		}
 	}
 
+	rules := strings.Split(field.Tag.Get("binding"), ";")
+
+	if reflect.DeepEqual(zero, fieldValue) {
+		for _, rule := range rules {
+			if rule == "Required" {
+				errors.Add([]string{field.Name}, ERR_REQUIRED, "Required")
+				break
+			}
+			if strings.HasPrefix(rule, "Default(") {
+				if fieldVal.CanSet() {
+					errors = setWithProperType(field.Type.Kind(), rule[8:len(rule)-1], fieldVal, field.Tag.Get("form"), errors)
+				} else {
+					errors.Add([]string{field.Name}, ERR_EXCLUDE, "Default")
+				}
+				break
+			}
+		}
+
+		return errors
+	}
+
 VALIDATE_RULES:
-	for _, rule := range strings.Split(field.Tag.Get("binding"), ";") {
+	for _, rule := range rules {
 		if len(rule) == 0 {
 			continue
 		}
 
 		switch {
-		case rule == "OmitEmpty":
-			if reflect.DeepEqual(zero, fieldValue) {
-				break VALIDATE_RULES
-			}
 		case rule == "Required":
-			v := reflect.ValueOf(fieldValue)
-			if v.Kind() == reflect.Slice {
-				if v.Len() == 0 {
-					errors.Add([]string{field.Name}, ERR_REQUIRED, "Required")
-					break VALIDATE_RULES
-				}
+			continue
+		case strings.HasPrefix(rule, "Default("):
+			continue
+		case rule == "OmitEmpty": // legacy
+			continue
 
-				continue
-			}
-
-			if reflect.DeepEqual(zero, fieldValue) {
-				errors.Add([]string{field.Name}, ERR_REQUIRED, "Required")
-				break VALIDATE_RULES
-			}
 		case rule == "AlphaDash":
 			if AlphaDashPattern.MatchString(fmt.Sprintf("%v", fieldValue)) {
 				errors.Add([]string{field.Name}, ERR_ALPHA_DASH, "AlphaDash")
@@ -445,8 +458,7 @@ VALIDATE_RULES:
 				errors.Add([]string{field.Name}, ERR_SIZE, "Size")
 				break VALIDATE_RULES
 			}
-			v := reflect.ValueOf(fieldValue)
-			if v.Kind() == reflect.Slice && v.Len() != size {
+			if fieldVal.Kind() == reflect.Slice && fieldVal.Len() != size {
 				errors.Add([]string{field.Name}, ERR_SIZE, "Size")
 				break VALIDATE_RULES
 			}
@@ -456,8 +468,7 @@ VALIDATE_RULES:
 				errors.Add([]string{field.Name}, ERR_MIN_SIZE, "MinSize")
 				break VALIDATE_RULES
 			}
-			v := reflect.ValueOf(fieldValue)
-			if v.Kind() == reflect.Slice && v.Len() < min {
+			if fieldVal.Kind() == reflect.Slice && fieldVal.Len() < min {
 				errors.Add([]string{field.Name}, ERR_MIN_SIZE, "MinSize")
 				break VALIDATE_RULES
 			}
@@ -467,8 +478,7 @@ VALIDATE_RULES:
 				errors.Add([]string{field.Name}, ERR_MAX_SIZE, "MaxSize")
 				break VALIDATE_RULES
 			}
-			v := reflect.ValueOf(fieldValue)
-			if v.Kind() == reflect.Slice && v.Len() > max {
+			if fieldVal.Kind() == reflect.Slice && fieldVal.Len() > max {
 				errors.Add([]string{field.Name}, ERR_MAX_SIZE, "MaxSize")
 				break VALIDATE_RULES
 			}
@@ -489,9 +499,7 @@ VALIDATE_RULES:
 			}
 		case rule == "Url":
 			str := fmt.Sprintf("%v", fieldValue)
-			if len(str) == 0 {
-				continue
-			} else if !isURL(str) {
+			if !isURL(str) {
 				errors.Add([]string{field.Name}, ERR_URL, "Url")
 				break VALIDATE_RULES
 			}
@@ -514,15 +522,6 @@ VALIDATE_RULES:
 			if strings.Contains(fmt.Sprintf("%v", fieldValue), rule[8:len(rule)-1]) {
 				errors.Add([]string{field.Name}, ERR_EXCLUDE, "Exclude")
 				break VALIDATE_RULES
-			}
-		case strings.HasPrefix(rule, "Default("):
-			if reflect.DeepEqual(zero, fieldValue) {
-				if fieldVal.CanAddr() {
-					errors = setWithProperType(field.Type.Kind(), rule[8:len(rule)-1], fieldVal, field.Tag.Get("form"), errors)
-				} else {
-					errors.Add([]string{field.Name}, ERR_EXCLUDE, "Default")
-					break VALIDATE_RULES
-				}
 			}
 		default:
 			// Apply custom validation rules
@@ -551,21 +550,19 @@ VALIDATE_RULES:
 // NameMapper represents a form tag name mapper.
 type NameMapper func(string) string
 
-var (
-	nameMapper = func(field string) string {
-		newstr := make([]rune, 0, len(field))
-		for i, chr := range field {
-			if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
-				if i > 0 {
-					newstr = append(newstr, '_')
-				}
-				chr -= ('A' - 'a')
+var nameMapper = func(field string) string {
+	newstr := make([]rune, 0, len(field))
+	for i, chr := range field {
+		if isUpper := 'A' <= chr && chr <= 'Z'; isUpper {
+			if i > 0 {
+				newstr = append(newstr, '_')
 			}
-			newstr = append(newstr, chr)
+			chr -= ('A' - 'a')
 		}
-		return string(newstr)
+		newstr = append(newstr, chr)
 	}
-)
+	return string(newstr)
+}
 
 // SetNameMapper sets name mapper.
 func SetNameMapper(nm NameMapper) {
@@ -574,8 +571,8 @@ func SetNameMapper(nm NameMapper) {
 
 // Takes values from the form data and puts them into a struct
 func mapForm(formStruct reflect.Value, form map[string][]string,
-	formfile map[string][]*multipart.FileHeader, errors Errors) Errors {
-
+	formfile map[string][]*multipart.FileHeader, errors Errors,
+) Errors {
 	if formStruct.Kind() == reflect.Ptr {
 		formStruct = formStruct.Elem()
 	}

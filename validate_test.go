@@ -21,13 +21,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
-var emptyStr = ""
-var urlStr = "http://example.com/"
-var alphaDashStr = "aB-12"
+var (
+	emptyStr     = ""
+	urlStr       = "http://example.com/"
+	alphaDashStr = "aB-12"
+)
 
 var validationTestCases = []validationTestCase{
 	{
@@ -377,11 +379,11 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "email fail",
 		data: struct {
-			EmailValid  string `binding:"Email"`
-			EmailFail   string `binding:"Email"`
-			EmailFail2  string `binding:"Email"`
-			EmailFail3  string `binding:"Email"`
-		} {
+			EmailValid string `binding:"Email"`
+			EmailFail  string `binding:"Email"`
+			EmailFail2 string `binding:"Email"`
+			EmailFail3 string `binding:"Email"`
+		}{
 			EmailValid: "123@asd.com",
 			EmailFail:  "test 123@asd.com",
 			EmailFail2: "123@asd.com test",
@@ -417,6 +419,27 @@ var validationTestCases = []validationTestCase{
 			UrlPointer:       &emptyStr,
 			AlphaDash:        "",
 			AlphaDashPointer: &emptyStr,
+		},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "no errors with not required fields",
+		data: []*struct {
+			AlphaDash    string   `binding:"AlphaDash"`
+			AlphaDashDot string   `binding:"AlphaDashDot"`
+			Size         string   `binding:"Size(1)"`
+			SizeSlice    []string `binding:"Size(1)"`
+			MinSize      string   `binding:"MinSize(5)"`
+			MinSizeSlice []string `binding:"MinSize(5)"`
+			MaxSize      string   `binding:"MaxSize(1)"`
+			MaxSizeSlice []string `binding:"MaxSize(1)"`
+			Range        int      `binding:"Range(1,2)"`
+			Email        string   `binding:"Email"`
+			Url          string   `binding:"Url"`
+			In           string   `binding:"Default(0);In(1,2,3)"`
+			NotIn        string   `binding:"NotIn(1,2,3)"`
+		}{
+			{},
 		},
 		expectedErrors: Errors{},
 	},
@@ -458,6 +481,93 @@ var validationTestCases = []validationTestCase{
 				FieldNames:     []string{"AlphaDashPointer"},
 				Classification: "AlphaDash",
 				Message:        "AlphaDash",
+			},
+		},
+	},
+	{
+		description: "errors with required fields",
+		data: []*struct {
+			AlphaDash    string   `binding:"Required;AlphaDash"`
+			AlphaDashDot string   `binding:"Required;AlphaDashDot"`
+			Size         string   `binding:"Required;Size(1)"`
+			SizeSlice    []string `binding:"Required;Size(1)"`
+			MinSize      string   `binding:"Required;MinSize(5)"`
+			MinSizeSlice []string `binding:"Required;MinSize(5)"`
+			MaxSize      string   `binding:"Required;MaxSize(1)"`
+			MaxSizeSlice []string `binding:"Required;MaxSize(1)"`
+			Range        int      `binding:"Required;Range(1,2)"`
+			Email        string   `binding:"Required;Email"`
+			Url          string   `binding:"Required;Url"`
+			In           string   `binding:"Required;Default(0);In(1,2,3)"`
+			NotIn        string   `binding:"Required;NotIn(1,2,3)"`
+		}{
+			{},
+		},
+		expectedErrors: Errors{
+			Error{
+				FieldNames:     []string{"AlphaDash"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"AlphaDashDot"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"Size"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"SizeSlice"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"MinSize"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"MinSizeSlice"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"MaxSize"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"MaxSizeSlice"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"Range"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"Email"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"Url"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"In"},
+				Classification: "Required",
+				Message:        "Required",
+			},
+			Error{
+				FieldNames:     []string{"NotIn"},
+				Classification: "Required",
+				Message:        "Required",
 			},
 		},
 	},
