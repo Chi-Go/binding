@@ -25,6 +25,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	emptyStr     = ""
+	urlStr       = "http://example.com/"
+	alphaDashStr = "aB-12"
+)
+
 var validationTestCases = []validationTestCase{
 	{
 		description: "No errors",
@@ -161,7 +167,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List Validation",
 		data: []BlogPost{
-			BlogPost{
+			{
 				Id: 1,
 				Post: Post{
 					Title:   "First Post",
@@ -171,7 +177,7 @@ var validationTestCases = []validationTestCase{
 					Name: "Leeor Aharon",
 				},
 			},
-			BlogPost{
+			{
 				Id: 2,
 				Post: Post{
 					Title:   "Second Post",
@@ -187,7 +193,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List Validation w/ Errors",
 		data: []BlogPost{
-			BlogPost{
+			{
 				Id: 1,
 				Post: Post{
 					Title:   "First Post",
@@ -197,7 +203,7 @@ var validationTestCases = []validationTestCase{
 					Name: "Leeor Aharon",
 				},
 			},
-			BlogPost{
+			{
 				Id: 2,
 				Post: Post{
 					Title:   "Too Short",
@@ -219,7 +225,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List of invalid custom validations",
 		data: []SadForm{
-			SadForm{
+			{
 				AlphaDash:    ",",
 				AlphaDashDot: ",",
 				Size:         "123",
@@ -324,7 +330,7 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "List of valid custom validations",
 		data: []SadForm{
-			SadForm{
+			{
 				AlphaDash:    "123-456",
 				AlphaDashDot: "123.456",
 				Size:         "1",
@@ -347,8 +353,8 @@ var validationTestCases = []validationTestCase{
 		data: Group{
 			Name: "group1",
 			People: []Person{
-				Person{Name: "anthony"},
-				Person{Name: "awoods"},
+				{Name: "anthony"},
+				{Name: "awoods"},
 			},
 		},
 		expectedErrors: Errors{},
@@ -358,8 +364,8 @@ var validationTestCases = []validationTestCase{
 		data: Group{
 			Name: "group1",
 			People: []Person{
-				Person{Name: "anthony"},
-				Person{Name: ""},
+				{Name: "anthony"},
+				{Name: ""},
 			},
 		},
 		expectedErrors: Errors{
@@ -373,11 +379,11 @@ var validationTestCases = []validationTestCase{
 	{
 		description: "email fail",
 		data: struct {
-			EmailValid  string `binding:"Email"`
-			EmailFail   string `binding:"Email"`
-			EmailFail2  string `binding:"Email"`
-			EmailFail3  string `binding:"Email"`
-		} {
+			EmailValid string `binding:"Email"`
+			EmailFail  string `binding:"Email"`
+			EmailFail2 string `binding:"Email"`
+			EmailFail3 string `binding:"Email"`
+		}{
 			EmailValid: "123@asd.com",
 			EmailFail:  "test 123@asd.com",
 			EmailFail2: "123@asd.com test",
@@ -402,6 +408,21 @@ var validationTestCases = []validationTestCase{
 		},
 	},
 	{
+		description:    "pointer form empty and nil",
+		data:           PointerForm{},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form empty",
+		data: PointerForm{
+			Url:              "",
+			UrlPointer:       &emptyStr,
+			AlphaDash:        "",
+			AlphaDashPointer: &emptyStr,
+		},
+		expectedErrors: Errors{},
+	},
+	{
 		description: "no errors with not required fields",
 		data: []*struct {
 			AlphaDash    string   `binding:"AlphaDash"`
@@ -417,10 +438,51 @@ var validationTestCases = []validationTestCase{
 			Url          string   `binding:"Url"`
 			In           string   `binding:"Default(0);In(1,2,3)"`
 			NotIn        string   `binding:"NotIn(1,2,3)"`
-		} {
+		}{
 			{},
 		},
 		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form with valid data",
+		data: PointerForm{
+			Url:              urlStr,
+			UrlPointer:       &urlStr,
+			AlphaDash:        alphaDashStr,
+			AlphaDashPointer: &alphaDashStr,
+		},
+		expectedErrors: Errors{},
+	},
+	{
+		description: "pointer form with invalid data",
+		data: PointerForm{
+			Url:              alphaDashStr,
+			UrlPointer:       &alphaDashStr,
+			AlphaDash:        urlStr,
+			AlphaDashPointer: &urlStr,
+		},
+		expectedErrors: Errors{
+			Error{
+				FieldNames:     []string{"Url", "UrlPointer"},
+				Classification: "Url",
+				Message:        "Url",
+			},
+			Error{
+				FieldNames:     []string{"UrlPointer"},
+				Classification: "Url",
+				Message:        "Url",
+			},
+			Error{
+				FieldNames:     []string{"AlphaDash"},
+				Classification: "AlphaDash",
+				Message:        "AlphaDash",
+			},
+			Error{
+				FieldNames:     []string{"AlphaDashPointer"},
+				Classification: "AlphaDash",
+				Message:        "AlphaDash",
+			},
+		},
 	},
 	{
 		description: "errors with required fields",
@@ -438,7 +500,7 @@ var validationTestCases = []validationTestCase{
 			Url          string   `binding:"Required;Url"`
 			In           string   `binding:"Required;Default(0);In(1,2,3)"`
 			NotIn        string   `binding:"Required;NotIn(1,2,3)"`
-		} {
+		}{
 			{},
 		},
 		expectedErrors: Errors{

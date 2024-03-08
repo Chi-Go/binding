@@ -82,6 +82,13 @@ type (
 		People []Person `json:"people" binding:"MinSize(1)"`
 	}
 
+	PointerForm struct {
+		Url              string  `form:"Url" binding:"Url"`
+		UrlPointer       *string `form:"UrlPointer" binding:"Url"`
+		AlphaDash        string  `form:"AlphaDash" binding:"AlphaDash"`
+		AlphaDashPointer *string `form:"AlphaDashPointer" binding:"AlphaDash"`
+	}
+
 	CustomErrorHandle struct {
 		Rule `binding:"CustomRule"`
 	}
