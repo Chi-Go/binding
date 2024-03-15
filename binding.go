@@ -30,7 +30,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/goccy/go-json"
-	"github.com/unknwon/com"
 )
 
 // Bind wraps up the functionality of the Form and Json middleware
@@ -236,12 +235,14 @@ func Validate(req *http.Request, obj interface{}) Errors {
 var (
 	AlphaDashPattern    = regexp.MustCompile(`[^\d\w-_]`)
 	AlphaDashDotPattern = regexp.MustCompile(`[^\d\w-_\.]`)
-	EmailPattern        = regexp.MustCompile(`\A[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`+"`"+`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[a-zA-Z0-9](?:[\w-]*[\w])?\z`)
+	EmailPattern        = regexp.MustCompile(`\A[\w!#$%&'*+/=?^_` + "`" + `{|}~-]+(?:\.[\w!#$%&'*+/=?^_` + "`" + `{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[a-zA-Z0-9](?:[\w-]*[\w])?\z`)
 )
 
 // Copied from github.com/asaskevich/govalidator.
-const _MAX_URL_RUNE_COUNT = 2083
-const _MIN_URL_RUNE_COUNT = 3
+const (
+	_MAX_URL_RUNE_COUNT = 2083
+	_MIN_URL_RUNE_COUNT = 3
+)
 
 var (
 	urlSchemaRx    = `((ftp|tcp|udp|wss?|https?):\/\/)`
@@ -487,8 +488,10 @@ VALIDATE_RULES:
 			if len(nums) != 2 {
 				break VALIDATE_RULES
 			}
-			val := com.StrTo(fmt.Sprintf("%v", fieldValue)).MustInt()
-			if val < com.StrTo(nums[0]).MustInt() || val > com.StrTo(nums[1]).MustInt() {
+			val, _ := strconv.Atoi(fmt.Sprintf("%v", fieldValue))
+			nums0, _ := strconv.Atoi(nums[0])
+			nums1, _ := strconv.Atoi(nums[1])
+			if val < nums0 || val > nums1 {
 				errors.Add([]string{field.Name}, ERR_RANGE, "Range")
 				break VALIDATE_RULES
 			}
