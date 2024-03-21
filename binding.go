@@ -698,6 +698,8 @@ func setWithProperType(valueKind reflect.Kind, val string, structField reflect.V
 		}
 	case reflect.String:
 		structField.SetString(val)
+	case reflect.Ptr:
+		structField.Set(reflect.ValueOf(&val))
 	}
 	return errors
 }

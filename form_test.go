@@ -149,6 +149,14 @@ var formTestCases = []formTestCase{
 		payload:       ``,
 		expected:      CustomErrorHandle{},
 	},
+	{
+		description:   "pointer form",
+		shouldSucceed: true,
+		deepEqual:     true,
+		payload:       fmt.Sprintf("Url=%s&UrlPointer=%s&AlphaDash=%s&AlphaDashPointer=%s", urlStr, urlStr, alphaDashStr, alphaDashStr),
+		contentType:   formContentType,
+		expected:      PointerForm{Url: urlStr, UrlPointer: &urlStr, AlphaDash: alphaDashStr, AlphaDashPointer: &alphaDashStr},
+	},
 }
 
 func init() {
@@ -242,6 +250,12 @@ func performFormTest(t *testing.T, binder handlerFunc, testCase formTestCase) {
 	case CustomErrorHandle:
 		m.Get(testRoute, func(resp http.ResponseWriter, req *http.Request) {
 			var actual CustomErrorHandle
+			errs := binder(req, &actual)
+			formTestHandler(actual, errs)
+		})
+	case PointerForm:
+		m.Post(testRoute, func(resp http.ResponseWriter, req *http.Request) {
+			var actual PointerForm
 			errs := binder(req, &actual)
 			formTestHandler(actual, errs)
 		})
