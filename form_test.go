@@ -27,8 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testUrl = "http://test.com"
-
 var formTestCases = []formTestCase{
 	{
 		description:   "Happy path",
@@ -155,9 +153,9 @@ var formTestCases = []formTestCase{
 		description:   "pointer form",
 		shouldSucceed: true,
 		deepEqual:     true,
-		payload:       fmt.Sprintf("Url=%s&UrlPointer=%s&AlphaDash=%s&AlphaDashPointer=%s", testUrl, testUrl, alphaDashStr, alphaDashStr),
+		payload:       fmt.Sprintf("Url=%s&UrlPointer=%s&AlphaDash=%s&AlphaDashPointer=%s", urlStr, urlStr, alphaDashStr, alphaDashStr),
 		contentType:   formContentType,
-		expected:      PointerForm{Url: testUrl, UrlPointer: &testUrl, AlphaDash: alphaDashStr, AlphaDashPointer: &alphaDashStr},
+		expected:      PointerForm{Url: urlStr, UrlPointer: &urlStr, AlphaDash: alphaDashStr, AlphaDashPointer: &alphaDashStr},
 	},
 }
 
