@@ -153,9 +153,9 @@ var formTestCases = []formTestCase{
 		description:   "pointer form",
 		shouldSucceed: true,
 		deepEqual:     true,
-		payload:       fmt.Sprintf("Url=%s&UrlPointer=%s&AlphaDash=%s&AlphaDashPointer=%s", urlStr, urlStr, alphaDashStr, alphaDashStr),
+		payload:       fmt.Sprintf("Id=%d&IdPointer=%d&Url=%s&UrlPointer=%s&AlphaDash=%s&AlphaDashPointer=%s", idInt, idInt, urlStr, urlStr, alphaDashStr, alphaDashStr),
 		contentType:   formContentType,
-		expected:      PointerForm{Url: urlStr, UrlPointer: &urlStr, AlphaDash: alphaDashStr, AlphaDashPointer: &alphaDashStr},
+		expected:      PointerForm{Id: idInt, IdPointer: &idInt, Url: urlStr, UrlPointer: &urlStr, AlphaDash: alphaDashStr, AlphaDashPointer: &alphaDashStr},
 	},
 }
 

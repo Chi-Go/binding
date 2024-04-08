@@ -29,6 +29,7 @@ var (
 	emptyStr     = ""
 	urlStr       = "http://example.com/"
 	alphaDashStr = "aB-12"
+	idInt        = 1
 )
 
 var validationTestCases = []validationTestCase{

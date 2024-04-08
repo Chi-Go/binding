@@ -83,6 +83,8 @@ type (
 	}
 
 	PointerForm struct {
+		Id               int     `form:"Id" binding:"Id"`
+		IdPointer        *int    `form:"IdPointer" binding:"IdPointer"`
 		Url              string  `form:"Url" binding:"Url"`
 		UrlPointer       *string `form:"UrlPointer" binding:"Url"`
 		AlphaDash        string  `form:"AlphaDash" binding:"AlphaDash"`
