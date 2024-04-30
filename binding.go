@@ -638,7 +638,7 @@ func mapForm(formStruct reflect.Value, form map[string][]string,
 // This sets the value in a struct of an indeterminate type to the
 // matching value from the request (via Form middleware) in the
 // same type, so that not all deserialized values have to be strings.
-// Supported types are string, int, float, and bool.
+// Supported types are string, int, float, bool, and ptr of these types.
 func setWithProperType(valueKind reflect.Kind, val string, structField reflect.Value, nameInTag string, errors Errors) Errors {
 	switch valueKind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -699,7 +699,9 @@ func setWithProperType(valueKind reflect.Kind, val string, structField reflect.V
 	case reflect.String:
 		structField.SetString(val)
 	case reflect.Ptr:
-		structField.Set(reflect.ValueOf(&val))
+		newVal := reflect.New(structField.Type().Elem())
+		errors = setWithProperType(structField.Type().Elem().Kind(), val, newVal.Elem(), nameInTag, errors)
+		structField.Set(newVal)
 	}
 	return errors
 }
