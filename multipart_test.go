@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"testing"
 
-	chi "github.com/go-chi/chi/v5"
+	chi "github.com/Chi-Go/chi"
 	"github.com/stretchr/testify/assert"
 )
 
