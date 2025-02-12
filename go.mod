@@ -1,4 +1,4 @@
-module gitea.com/Chi-Go/binding
+module github.com/Chi-Go/binding
 
 go 1.24
 
